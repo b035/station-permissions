@@ -28,22 +28,35 @@ const SDK = __importStar(require("@the-stations-project/sdk"));
 /* MAIN */
 async function main(subcommand, args) {
     switch (subcommand) {
-        case "create": return await create(args[0]);
+        case "create_simple": return await create_simple(args[0]);
+        case "create_approved": return await create_approved(args[0]);
         case "remove": return await remove(args[0]);
         case "check": return await check(args[0], args[1]);
         default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
     }
 }
 /* SUB-FUNCTIONS */
-async function create(action) {
+async function create_simple(action) {
     const result = new SDK.Result(SDK.ExitCodes.Ok, undefined);
     /* safety */
     if (SDK.contains_undefined_arguments(arguments))
         return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
     /* get path */
     const path = SDK.Registry.join_paths("permissions", action);
-    /* create */
+    /* create dir */
     (await SDK.Registry.mkdir(path)).or_log_error()
+        .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+    return result;
+}
+async function create_approved(action) {
+    const result = new SDK.Result(SDK.ExitCodes.Ok, undefined);
+    /* safety */
+    if (SDK.contains_undefined_arguments(arguments))
+        return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
+    /* get path */
+    const path = SDK.Registry.join_paths("permissions", action);
+    /* create dir */
+    (await SDK.Registry.write(path, "")).or_log_error()
         .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
     return result;
 }

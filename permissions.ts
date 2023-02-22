@@ -8,7 +8,6 @@ async function main(subcommand: string, args: string[]) {
 		case "create_simple": return await create_simple(args[0]);
 		case "create_approved": return await create_approved(args[0]);
 		case "remove": return await remove(args[0]);
-		case "check": return await check(args[0], args[1]);
 		default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
 	}
 }
@@ -58,22 +57,6 @@ async function remove(action: string) {
 	/* delete */
 	(await SDK.Registry.delete(path)).or_log_error()
 		.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
-
-	return result;
-}
-
-async function check(action: string, uname: string) {
-	const result = new SDK.Result(SDK.ExitCodes.Ok, false);
-
-	/* safety */
-	if (SDK.contains_undefined_arguments(arguments)) return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
-
-	/* get path */
-	const path = SDK.Registry.join_paths("permissions", action, uname);
-
-	/* check permission */
-	(await SDK.Registry.test(path))
-		.ok(() => result.finalize_with_value(true));
 
 	return result;
 }
