@@ -62,7 +62,7 @@ async function remove(desc: string) {
 	return result;
 }
 
-async function mod_simple(action: string, desc: string, uname: string) {
+async function mod_simple(desc: string, action: string, uname: string) {
 	const result = new SDK.Result(SDK.ExitCodes.Ok, undefined);
 
 	/* safety */
