@@ -1,0 +1,32 @@
+{
+  "name": "@the-stations-project/permissions",
+  "version": "0.0.1",
+  "description": "Manages permissions",
+  "main": "permissions.js",
+  "bin": {
+    "permissions-init": "init.js",
+    "permissions": "permissions.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/b035/station-permissions.git"
+  },
+  "keywords": [
+    "station",
+    "stations",
+    "project"
+  ],
+  "author": "b035",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/b035/station-permissions/issues"
+  },
+  "homepage": "https://github.com/b035/station-permissions#readme",
+  "dependencies": {
+    "@the-stations-project/sdk": "^0.2.4",
+    "@types/node": "^18.14.0"
+  }
+}
