@@ -7,6 +7,8 @@ async function main(subcommand: string, args: string[]) {
 	switch (subcommand) {
 		case "create": return await create(args[0]);
 		case "remove": return await remove(args[0]);
+		case "read": return await read(args[0], args[1]);
+		case "write": return await write(args[0], args[1], args[2]);
 		default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
 	}
 }
