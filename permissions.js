@@ -32,6 +32,7 @@ async function main(subcommand, args) {
         case "remove": return await remove(args[0]);
         case "read": return await read(args[0], args[1]);
         case "write": return await write(args[0], args[1], args[2]);
+        case "check": return await check(args[0], args[1]);
         default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
     }
 }
@@ -54,6 +55,8 @@ async function create(desc) {
         (await SDK.Registry.write(SDK.Registry.join_paths(path, filename), "")).or_log_error()
             .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
     }
+    /* log */
+    SDK.log(result.has_failed ? "ERROR" : "ACTIVITY", `Permissions: create "${desc}".`);
     return result;
 }
 async function remove(desc) {
@@ -66,6 +69,8 @@ async function remove(desc) {
     /* delete */
     (await SDK.Registry.delete(path)).or_log_error()
         .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+    /* log */
+    SDK.log(result.has_failed ? "ERROR" : "ACTIVITY", `Permissions: remove "${desc}".`);
     return result;
 }
 async function read(desc, file) {
@@ -88,9 +93,48 @@ async function write(desc, file, value) {
         return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
     /* get path */
     const path = SDK.Registry.join_paths("permissions", desc, file);
-    /* read */
+    /* write */
     (await SDK.Registry.write(path, value)).or_log_error()
         .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+    /* log */
+    SDK.log(result.has_failed ? "ERROR" : "ACTIVITY", `Permissions: write "${desc}/${file}".`);
+    return result;
+}
+async function check(action, uname) {
+    const result = new SDK.Result(SDK.ExitCodes.Ok, "");
+    /* safety */
+    if (SDK.contains_undefined_arguments(arguments))
+        return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
+    /* get paths */
+    const sole_path = SDK.Registry.join_paths("permissions", action, "sole");
+    const approved_path = SDK.Registry.join_paths("permissions", action, "approved");
+    /* check permissions */
+    const sole_permission_result = (await check_sole_permissions(sole_path, uname)).or_log_error();
+    if (!sole_permission_result.has_failed && sole_permission_result.value == true)
+        return result.finalize_with_value("sole");
+    return result;
+}
+/* HELPERS */
+async function check_sole_permissions(file_path, uname) {
+    const result = new SDK.Result(SDK.ExitCodes.Ok, false);
+    /* read file */
+    const read_result = (await SDK.Registry.read(file_path)).or_log_error();
+    if (read_result.has_failed)
+        return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
+    const text = read_result.value;
+    /* parse file */
+    const groups = text.split("\n");
+    /* check permission */
+    for (let group of groups) {
+        /* check if user is in group */
+        const shell_result = (await SDK.Shell.exec_sync(`groups mod_users ${group} check ${uname}`)).or_log_error();
+        //safety
+        if (shell_result.has_failed)
+            continue;
+        const [code, value] = shell_result.value.split("\n")[0].split("|");
+        if (code == "0" && value == "true")
+            return result.finalize_with_value(true);
+    }
     return result;
 }
 SDK.start_module(main, (result) => console.log(result.to_string()));
