@@ -5,14 +5,14 @@ import * as SDK from "@the-stations-project/sdk";
 /* MAIN */
 async function main(subcommand: string, args: string[]) {
 	switch (subcommand) {
-		case "create_approved": return await create_approved(args[0]);
+		case "create": return await create(args[0]);
 		case "remove": return await remove(args[0]);
 		default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
 	}
 }
 
 /* SUB-FUNCTIONS */
-async function create_approved(desc: string) {
+async function create(desc: string) {
 	const result = new SDK.Result(SDK.ExitCodes.Ok, undefined);
 
 	/* safety */
