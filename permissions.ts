@@ -36,6 +36,9 @@ async function create(desc: string) {
 			.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
 	}
 
+	/* log */
+	SDK.log(result.has_failed ? "ERROR" : "ACTIVITY", `Permissions: create "${desc}".`);
+
 	return result;
 }
 
@@ -51,6 +54,9 @@ async function remove(desc: string) {
 	/* delete */
 	(await SDK.Registry.delete(path)).or_log_error()
 		.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+
+	/* log */
+	SDK.log(result.has_failed ? "ERROR" : "ACTIVITY", `Permissions: remove "${desc}".`);
 
 	return result;
 }
@@ -81,9 +87,12 @@ async function write(desc: string, file: string, value: string) {
 	/* get path */
 	const path = SDK.Registry.join_paths("permissions", desc, file);
 
-	/* read */
+	/* write */
 	(await SDK.Registry.write(path, value)).or_log_error()
 		.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+
+	/* log */
+	SDK.log(result.has_failed ? "ERROR" : "ACTIVITY", `Permissions: write "${desc}/${file}".`);
 
 	return result;
 }
