@@ -101,7 +101,7 @@ async function write(desc, file, value) {
     return result;
 }
 async function check(action, uname) {
-    const result = new SDK.Result(SDK.ExitCodes.Ok, "");
+    const result = new SDK.Result(SDK.ExitCodes.Ok, "none");
     /* safety */
     if (SDK.contains_undefined_arguments(arguments))
         return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
@@ -112,6 +112,9 @@ async function check(action, uname) {
     const sole_permission_result = (await check_sole_permissions(sole_path, uname)).or_log_error();
     if (!sole_permission_result.has_failed && sole_permission_result.value == true)
         return result.finalize_with_value("sole");
+    const approved_permission_result = (await check_approved_permissions(approved_path, uname)).or_log_error();
+    if (!approved_permission_result.has_failed && approved_permission_result.value == true)
+        return result.finalize_with_value("approved");
     return result;
 }
 /* HELPERS */
@@ -134,6 +137,33 @@ async function check_sole_permissions(file_path, uname) {
         const [code, value] = shell_result.value.split("\n")[0].split("|");
         if (code == "0" && value == "true")
             return result.finalize_with_value(true);
+    }
+    return result;
+}
+async function check_approved_permissions(file_path, uname) {
+    const result = new SDK.Result(SDK.ExitCodes.Ok, false);
+    /* read file */
+    const read_result = (await SDK.Registry.read(file_path)).or_log_error();
+    if (read_result.has_failed)
+        return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
+    const text = read_result.value;
+    /* parse file */
+    const conditions = text.split("\n");
+    /* check permission */
+    for (let condition of conditions) {
+        /* check if user is in one of the groups */
+        //extract groups
+        const groups = condition.split(",")
+            .map(x => x.split(/[\.%]/)[0]);
+        for (let group of groups) {
+            const shell_result = (await SDK.Shell.exec_sync(`groups mod_users ${group} check ${uname}`)).or_log_error();
+            //safety
+            if (shell_result.has_failed)
+                continue;
+            const [code, value] = shell_result.value.split("\n")[0].split("|");
+            if (code == "0" && value == "true")
+                return result.finalize_with_value(true);
+        }
     }
     return result;
 }
