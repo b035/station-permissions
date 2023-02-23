@@ -49,7 +49,7 @@ async function create(desc) {
         "sole",
         "approved",
     ]) {
-        (await SDK.Registry.write(filename, "")).or_log_error()
+        (await SDK.Registry.write(SDK.Registry.join_paths(path, filename), "")).or_log_error()
             .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
     }
     return result;

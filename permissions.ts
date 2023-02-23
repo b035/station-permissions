@@ -53,4 +53,18 @@ async function remove(desc: string) {
 	return result;
 }
 
+async function read(desc: string, file: string) {
+	const result = new SDK.Result(SDK.ExitCodes.Ok, "");
+
+	/* get path */
+	const path = SDK.Registry.join_paths("permissions", desc, file);
+
+	/* read */
+	(await SDK.Registry.read(path)).or_log_error()
+		.ok((read_result) => result.finalize_with_value(read_result.value!))
+		.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+
+	return result;
+}
+
 SDK.start_module(main, (result) => console.log(result.to_string()));
