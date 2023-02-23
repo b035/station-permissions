@@ -67,4 +67,17 @@ async function read(desc: string, file: string) {
 	return result;
 }
 
+async function write(desc: string, file: string, value: string) {
+	const result = new SDK.Result(SDK.ExitCodes.Ok, undefined);
+
+	/* get path */
+	const path = SDK.Registry.join_paths("permissions", desc, file);
+
+	/* read */
+	(await SDK.Registry.write(path, value)).or_log_error()
+		.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+
+	return result;
+}
+
 SDK.start_module(main, (result) => console.log(result.to_string()));
