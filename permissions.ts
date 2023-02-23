@@ -58,6 +58,9 @@ async function remove(desc: string) {
 async function read(desc: string, file: string) {
 	const result = new SDK.Result(SDK.ExitCodes.Ok, "");
 
+	/* safety */
+	if (SDK.contains_undefined_arguments(arguments)) return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
+
 	/* get path */
 	const path = SDK.Registry.join_paths("permissions", desc, file);
 
@@ -71,6 +74,9 @@ async function read(desc: string, file: string) {
 
 async function write(desc: string, file: string, value: string) {
 	const result = new SDK.Result(SDK.ExitCodes.Ok, undefined);
+
+	/* safety */
+	if (SDK.contains_undefined_arguments(arguments)) return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
 
 	/* get path */
 	const path = SDK.Registry.join_paths("permissions", desc, file);
