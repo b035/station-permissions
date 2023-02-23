@@ -22,8 +22,17 @@ async function create(desc: string) {
 	const path = SDK.Registry.join_paths("permissions", desc);
 
 	/* create dir */
-	(await SDK.Registry.write(path, "")).or_log_error()
+	(await SDK.Registry.mkdir(path)).or_log_error()
 		.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+
+	/* write files */
+	for (let filename of [
+		"sole",
+		"approved",
+	]) {
+		(await SDK.Registry.write(filename, "")).or_log_error()
+			.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+	}
 
 	return result;
 }
