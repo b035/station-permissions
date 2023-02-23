@@ -98,8 +98,9 @@ async function write(desc: string, file: string, value: string) {
 	return result;
 }
 
+type check_result = "none" | "sole" | string[]
 async function check(action: string, uname: string) {
-	const result = new SDK.Result(SDK.ExitCodes.Ok, "");
+	const result = new SDK.Result(SDK.ExitCodes.Ok, "none" as check_result);
 
 	/* safety */
 	if (SDK.contains_undefined_arguments(arguments)) return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
