@@ -172,6 +172,14 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 						if (new RegExp(`^(${illegal_words})`).test(action_words[i])) continue descloop;
 						break;
 					}
+					case "@of": {
+						const legal_words = flag_words 
+							.join("|");
+
+						//skip if no match
+						if (!new RegExp(`^(${legal_words})`).test(action_words[i])) continue descloop;
+						break;
+					}
 					default: continue descloop; //safety
 				}
 

@@ -166,6 +166,15 @@ async function get_action_desc(action, flag_values) {
                             continue descloop;
                         break;
                     }
+                    case "@of": {
+                        const legal_words = flag_words
+                            .join("|");
+                        console.log(legal_words, action_words[i]);
+                        //skip if no match
+                        if (!new RegExp(`^(${legal_words})`).test(action_words[i]))
+                            continue descloop;
+                        break;
+                    }
                     default: continue descloop; //safety
                 }
             }
