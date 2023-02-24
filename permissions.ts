@@ -161,7 +161,7 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 							.join("|");
 
 						//skip if match
-						if (new RegExp(`^(${illegal_words})`).test(desc_words[i])) continue descloop;
+						if (new RegExp(`^(${illegal_words})`).test(action_words[i])) continue descloop;
 						break;
 					}
 					default: continue descloop; //safety

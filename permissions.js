@@ -143,7 +143,6 @@ async function get_action_desc(action, flag_values) {
                 switch (flag) {
                     case "@get": {
                         const val = flag_values[flag_body];
-                        console.log(val, action_words[i]);
                         //skip if no match
                         if (action_words[i] != val)
                             continue descloop;
@@ -154,7 +153,8 @@ async function get_action_desc(action, flag_values) {
                             .split("_")
                             .join("|");
                         //skip if match
-                        if (new RegExp(`^(${illegal_words})`).test(desc_words[i]))
+                        console.log(illegal_words, action_words[i]);
+                        if (new RegExp(`^(${illegal_words})`).test(action_words[i]))
                             continue descloop;
                         break;
                     }
