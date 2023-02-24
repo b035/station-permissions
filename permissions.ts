@@ -152,6 +152,9 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 				const [flag, ...flag_words] = desc_words[i].split("_");
 
 				switch (flag) {
+					case "@any": {
+						break;
+					}
 					case "@get": {
 						const val = flag_values[flag_words[0]];
 
