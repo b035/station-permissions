@@ -139,21 +139,20 @@ async function get_action_desc(action, flag_values) {
         for (let i in desc_words) {
             /* process flags */
             if (desc_words[i][0] == "@") {
-                const [flag, flag_body] = desc_words[i].split("_");
+                const [flag, ...flag_words] = desc_words[i].split("_");
                 switch (flag) {
                     case "@get": {
-                        const val = flag_values[flag_body];
+                        const val = flag_values[flag_words[0]];
                         //skip if no match
                         if (action_words[i] != val)
                             continue descloop;
                         break;
                     }
                     case "@not": {
-                        const illegal_words = flag_body
-                            .split("_")
+                        const illegal_words = flag_words
                             .join("|");
+                        console.log(illegal_words);
                         //skip if match
-                        console.log(illegal_words, action_words[i]);
                         if (new RegExp(`^(${illegal_words})`).test(action_words[i]))
                             continue descloop;
                         break;
