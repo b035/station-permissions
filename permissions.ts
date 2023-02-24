@@ -105,6 +105,12 @@ async function check(action: string, uname: string) {
 	/* safety */
 	if (SDK.contains_undefined_arguments(arguments)) return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
 
+	/* get description */
+	const desc_result = (await get_action_desc(action, {
+		uname: uname,
+	})).or_log_error();
+	console.log(desc_result);
+
 	/* get paths */
 	const sole_path = SDK.Registry.join_paths("permissions", action, "sole");
 	const approved_path = SDK.Registry.join_paths("permissions", action, "approved");
@@ -120,8 +126,8 @@ async function check(action: string, uname: string) {
 }
 
 /* HELPERS */
-async function get_permission_dir(action: string, flag_values: {[key: string]: string}) {
-	const result = new SDK.Result(SDK.ExitCodes.Ok, [] as string[]);
+async function get_action_desc(action: string, flag_values: {[key: string]: string}) {
+	const result = new SDK.Result(SDK.ExitCodes.Ok, "");
 
 	/* read directory */
 	const read_result = (await SDK.Registry.ls("permissions")).or_log_error();
@@ -133,7 +139,6 @@ async function get_permission_dir(action: string, flag_values: {[key: string]: s
 	const action_words = action.split(" ");
 
 	/* find matching description */
-	let matching_desc = "";
 	descloop: for (let desc of descriptions) {
 		const desc_words = desc.split(" ");
 
@@ -143,14 +148,14 @@ async function get_permission_dir(action: string, flag_values: {[key: string]: s
 				const [flag, flag_body] = desc_words[i].split("_");
 
 				switch (flag) {
-					case "get": {
+					case "@get": {
 						const val = flag_values[flag_body];
 
 						//skip if no match
-						if (desc_words[i] != val) continue descloop;
+						if (action_words[i] != val) continue descloop;
 						break;
 					}
-					case "not": {
+					case "@not": {
 						const illegal_words = flag_body
 							.split("_")
 							.join("|");
@@ -159,6 +164,7 @@ async function get_permission_dir(action: string, flag_values: {[key: string]: s
 						if (new RegExp(`^(${illegal_words})`).test(desc_words[i])) continue descloop;
 						break;
 					}
+					default: continue descloop; //safety
 				}
 
 
@@ -169,9 +175,10 @@ async function get_permission_dir(action: string, flag_values: {[key: string]: s
 		}
 
 		//description matches
-		matching_desc = desc;
-		break;
+		return result.finalize_with_value(desc);
 	}
+
+	return result;
 }
 
 async function check_sole_permissions(file_path: string, uname: string) {

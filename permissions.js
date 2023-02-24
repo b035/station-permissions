@@ -105,6 +105,11 @@ async function check(action, uname) {
     /* safety */
     if (SDK.contains_undefined_arguments(arguments))
         return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
+    /* get description */
+    const desc_result = (await get_action_desc(action, {
+        uname: uname,
+    })).or_log_error();
+    console.log(desc_result);
     /* get paths */
     const sole_path = SDK.Registry.join_paths("permissions", action, "sole");
     const approved_path = SDK.Registry.join_paths("permissions", action, "approved");
@@ -118,6 +123,55 @@ async function check(action, uname) {
     return result;
 }
 /* HELPERS */
+async function get_action_desc(action, flag_values) {
+    const result = new SDK.Result(SDK.ExitCodes.Ok, "");
+    /* read directory */
+    const read_result = (await SDK.Registry.ls("permissions")).or_log_error();
+    if (read_result.has_failed)
+        return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
+    const descriptions = read_result.value
+        .reverse(); //alphabetical z-a => most precise description first
+    /* process action */
+    const action_words = action.split(" ");
+    /* find matching description */
+    descloop: for (let desc of descriptions) {
+        const desc_words = desc.split(" ");
+        for (let i in desc_words) {
+            /* process flags */
+            if (desc_words[i][0] == "@") {
+                const [flag, flag_body] = desc_words[i].split("_");
+                switch (flag) {
+                    case "@get": {
+                        const val = flag_values[flag_body];
+                        console.log(val, action_words[i]);
+                        //skip if no match
+                        if (action_words[i] != val)
+                            continue descloop;
+                        break;
+                    }
+                    case "@not": {
+                        const illegal_words = flag_body
+                            .split("_")
+                            .join("|");
+                        //skip if match
+                        if (new RegExp(`^(${illegal_words})`).test(desc_words[i]))
+                            continue descloop;
+                        break;
+                    }
+                    default: continue descloop; //safety
+                }
+            }
+            else {
+                //skip if no match
+                if (desc_words[i] != action_words[i])
+                    continue descloop;
+            }
+        }
+        //description matches
+        return result.finalize_with_value(desc);
+    }
+    return result;
+}
 async function check_sole_permissions(file_path, uname) {
     const result = new SDK.Result(SDK.ExitCodes.Ok, false);
     /* read file */
