@@ -109,11 +109,15 @@ async function check(action: string, uname: string) {
 	const desc_result = (await get_action_desc(action, {
 		uname: uname,
 	})).or_log_error();
-	console.log(desc_result);
+	if (desc_result.has_failed) return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
+	const desc = desc_result.value!;
+
+	/* reject if no description */
+	if (desc == "") return result.finalize_with_value("none");
 
 	/* get paths */
-	const sole_path = SDK.Registry.join_paths("permissions", action, "sole");
-	const approved_path = SDK.Registry.join_paths("permissions", action, "approved");
+	const sole_path = SDK.Registry.join_paths("permissions", desc, "sole");
+	const approved_path = SDK.Registry.join_paths("permissions", desc, "approved");
 
 	/* check permissions */
 	const sole_permission_result = (await check_sole_permissions(sole_path, uname)).or_log_error();
