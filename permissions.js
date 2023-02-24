@@ -109,10 +109,15 @@ async function check(action, uname) {
     const desc_result = (await get_action_desc(action, {
         uname: uname,
     })).or_log_error();
-    console.log(desc_result);
+    if (desc_result.has_failed)
+        return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
+    const desc = desc_result.value;
+    /* reject if no description */
+    if (desc == "")
+        return result.finalize_with_value("none");
     /* get paths */
-    const sole_path = SDK.Registry.join_paths("permissions", action, "sole");
-    const approved_path = SDK.Registry.join_paths("permissions", action, "approved");
+    const sole_path = SDK.Registry.join_paths("permissions", desc, "sole");
+    const approved_path = SDK.Registry.join_paths("permissions", desc, "approved");
     /* check permissions */
     const sole_permission_result = (await check_sole_permissions(sole_path, uname)).or_log_error();
     if (!sole_permission_result.has_failed && sole_permission_result.value == true)
@@ -132,7 +137,9 @@ async function get_action_desc(action, flag_values) {
     const descriptions = read_result.value
         .reverse(); //alphabetical z-a => most precise description first
     /* process action */
-    const action_words = action.split(" ");
+    const action_words = action
+        .replace(/["']/g, "")
+        .split(" ");
     /* find matching description */
     descloop: for (let desc of descriptions) {
         const desc_words = desc.split(" ");
@@ -141,6 +148,9 @@ async function get_action_desc(action, flag_values) {
             if (desc_words[i][0] == "@") {
                 const [flag, ...flag_words] = desc_words[i].split("_");
                 switch (flag) {
+                    case "@any": {
+                        break;
+                    }
                     case "@get": {
                         const val = flag_values[flag_words[0]];
                         //skip if no match
@@ -151,7 +161,6 @@ async function get_action_desc(action, flag_values) {
                     case "@not": {
                         const illegal_words = flag_words
                             .join("|");
-                        console.log(illegal_words);
                         //skip if match
                         if (new RegExp(`^(${illegal_words})`).test(action_words[i]))
                             continue descloop;

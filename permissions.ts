@@ -140,7 +140,9 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 		.reverse(); //alphabetical z-a => most precise description first
 
 	/* process action */
-	const action_words = action.split(" ");
+	const action_words = action
+		.replace(/["']/g, "")
+		.split(" ");
 
 	/* find matching description */
 	descloop: for (let desc of descriptions) {
