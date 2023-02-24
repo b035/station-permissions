@@ -162,7 +162,7 @@ async function get_action_desc(action, flag_values) {
         for (let i in desc_words) {
             /* process flags */
             if (desc_words[i][0] == "@") {
-                const [flag, ...flag_words] = desc_words[i].split("_");
+                const [flag, ...flag_words] = desc_words[i].split("__");
                 switch (flag) {
                     case "@any": {
                         break;
