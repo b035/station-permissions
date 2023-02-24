@@ -30,6 +30,7 @@ async function main(subcommand, args) {
     switch (subcommand) {
         case "create": return await create(args[0]);
         case "remove": return await remove(args[0]);
+        case "rename": return await rename(args[0], args[1]);
         case "read": return await read(args[0], args[1]);
         case "write": return await write(args[0], args[1], args[2]);
         case "check": return await check(args[0], args[1]);
@@ -68,6 +69,21 @@ async function remove(desc) {
     const path = SDK.Registry.join_paths("permissions", desc);
     /* delete */
     (await SDK.Registry.delete(path)).or_log_error()
+        .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+    /* log */
+    SDK.log(result.has_failed ? "ERROR" : "ACTIVITY", `Permissions: remove "${desc}".`);
+    return result;
+}
+async function rename(desc, new_desc) {
+    const result = new SDK.Result(SDK.ExitCodes.Ok, undefined);
+    /* safety */
+    if (SDK.contains_undefined_arguments(arguments))
+        return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
+    /* get path */
+    const path = SDK.Registry.join_paths("permissions", desc);
+    const new_path = SDK.Registry.join_paths("permissions", new_desc);
+    /* delete */
+    (await SDK.Registry.move(path, new_path)).or_log_error()
         .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
     /* log */
     SDK.log(result.has_failed ? "ERROR" : "ACTIVITY", `Permissions: remove "${desc}".`);
@@ -169,7 +185,6 @@ async function get_action_desc(action, flag_values) {
                     case "@of": {
                         const legal_words = flag_words
                             .join("|");
-                        console.log(legal_words, action_words[i]);
                         //skip if no match
                         if (!new RegExp(`^(${legal_words})`).test(action_words[i]))
                             continue descloop;
