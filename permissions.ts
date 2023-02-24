@@ -120,6 +120,60 @@ async function check(action: string, uname: string) {
 }
 
 /* HELPERS */
+async function get_permission_dir(action: string, flag_values: {[key: string]: string}) {
+	const result = new SDK.Result(SDK.ExitCodes.Ok, [] as string[]);
+
+	/* read directory */
+	const read_result = (await SDK.Registry.ls("permissions")).or_log_error();
+	if (read_result.has_failed) return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
+	const descriptions = read_result.value!
+		.reverse(); //alphabetical z-a => most precise description first
+
+	/* process action */
+	const action_words = action.split(" ");
+
+	/* find matching description */
+	let matching_desc = "";
+	descloop: for (let desc of descriptions) {
+		const desc_words = desc.split(" ");
+
+		for (let i in desc_words) {
+			/* process flags */
+			if (desc_words[i][0] == "@") {
+				const [flag, flag_body] = desc_words[i].split("_");
+
+				switch (flag) {
+					case "get": {
+						const val = flag_values[flag_body];
+
+						//skip if no match
+						if (desc_words[i] != val) continue descloop;
+						break;
+					}
+					case "not": {
+						const illegal_words = flag_body
+							.split("_")
+							.join("|");
+
+						//skip if match
+						if (new RegExp(`^(${illegal_words})`).test(desc_words[i])) continue descloop;
+						break;
+					}
+				}
+
+
+			} else {
+				//skip if no match
+				if (desc_words[i] != action_words[i]) continue descloop;
+			}
+		}
+
+		//description matches
+		matching_desc = desc;
+		break;
+	}
+}
+
 async function check_sole_permissions(file_path: string, uname: string) {
 	const result = new SDK.Result(SDK.ExitCodes.Ok, false);
 
