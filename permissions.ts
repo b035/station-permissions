@@ -9,7 +9,7 @@ async function main(subcommand: string, args: string[]) {
 		case "remove": return await remove(args[0]);
 		case "rename": return await rename(args[0], args[1]);
 		case "read": return await read(args[0], args[1]);
-		case "write": return await write(args[0], args[1], args[2]);
+		case "mod": return await mod(args[0], args[1], args[2]);
 		case "check": return await check(args[0], args[1]);
 		default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
 	}
@@ -100,7 +100,7 @@ async function read(desc: string, file: string) {
 	return result;
 }
 
-async function write(desc: string, file: string, value: string) {
+async function mod(desc: string, file: string, value: string) {
 	const result = new SDK.Result(SDK.ExitCodes.Ok, undefined);
 
 	/* safety */
