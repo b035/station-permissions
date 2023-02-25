@@ -30,11 +30,11 @@ async function create(desc: string) {
 		.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
 
 	/* write files */
-	for (let filename of [
+	for (let dirname of [
 		"sole",
 		"approved",
 	]) {
-		(await SDK.Registry.write(SDK.Registry.join_paths(path, filename), "")).or_log_error()
+		(await SDK.Registry.mkdir(SDK.Registry.join_paths(path, dirname))).or_log_error()
 			.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
 	}
 
@@ -153,7 +153,6 @@ async function check(action: string, uname: string) {
 /* HELPERS */
 async function get_action_desc(action: string, flag_values: {[key: string]: string}) {
 	const result = new SDK.Result(SDK.ExitCodes.Ok, "");
-
 	/* read directory */
 	const read_result = (await SDK.Registry.ls("permissions")).or_log_error();
 	if (read_result.has_failed) return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
@@ -203,8 +202,6 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 					}
 					default: continue descloop; //safety
 				}
-
-
 			} else {
 				//skip if no match
 				if (desc_words[i] != action_words[i]) continue descloop;
