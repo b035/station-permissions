@@ -34,6 +34,7 @@ async function main(subcommand, args) {
         case "read": return await read(args[0], args[1]);
         case "mod": return await mod(args[0], args[1], args[2], args[3]);
         case "check": return await check(args[0], args[1]);
+        case "check_approval": return await check_approved_permissions(args[0], args[1]);
         default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
     }
 }
