@@ -1,6 +1,6 @@
 {
   "name": "@the-stations-project/permissions",
-  "version": "0.2.0",
+  "version": "0.1.1",
   "description": "Manages permissions",
   "main": "permissions.js",
   "bin": {
@@ -26,7 +26,6 @@
   },
   "homepage": "https://github.com/b035/station-permissions#readme",
   "dependencies": {
-    "@the-stations-project/sdk": "^0.3.2",
-    "@types/node": "^18.14.0"
+    "@the-stations-project/sdk": "^0.3.2"
   }
 }
