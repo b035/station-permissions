@@ -84,7 +84,7 @@ async function rename(desc: string, new_desc: string) {
 }
 
 async function read(desc: string, file: string) {
-	const result = new SDK.Result(SDK.ExitCodes.Ok, "");
+	const result = new SDK.Result(SDK.ExitCodes.Ok, [] as string[]);
 
 	/* safety */
 	if (SDK.contains_undefined_arguments(arguments)) return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
@@ -93,7 +93,7 @@ async function read(desc: string, file: string) {
 	const path = SDK.Registry.join_paths("permissions", desc, file);
 
 	/* read */
-	(await SDK.Registry.read(path)).or_log_error()
+	(await SDK.Registry.ls(path)).or_log_error()
 		.ok((read_result) => result.finalize_with_value(read_result.value!))
 		.err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
 
