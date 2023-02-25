@@ -32,7 +32,7 @@ async function main(subcommand, args) {
         case "remove": return await remove(args[0]);
         case "rename": return await rename(args[0], args[1]);
         case "read": return await read(args[0], args[1]);
-        case "write": return await write(args[0], args[1], args[2]);
+        case "mod": return await mod(args[0], args[1], args[2], args[3]);
         case "check": return await check(args[0], args[1]);
         default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
     }
@@ -49,11 +49,11 @@ async function create(desc) {
     (await SDK.Registry.mkdir(path)).or_log_error()
         .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
     /* write files */
-    for (let filename of [
+    for (let dirname of [
         "sole",
         "approved",
     ]) {
-        (await SDK.Registry.write(SDK.Registry.join_paths(path, filename), "")).or_log_error()
+        (await SDK.Registry.mkdir(SDK.Registry.join_paths(path, dirname))).or_log_error()
             .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
     }
     /* log */
@@ -90,30 +90,41 @@ async function rename(desc, new_desc) {
     return result;
 }
 async function read(desc, file) {
-    const result = new SDK.Result(SDK.ExitCodes.Ok, "");
+    const result = new SDK.Result(SDK.ExitCodes.Ok, []);
     /* safety */
     if (SDK.contains_undefined_arguments(arguments))
         return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
     /* get path */
     const path = SDK.Registry.join_paths("permissions", desc, file);
     /* read */
-    (await SDK.Registry.read(path)).or_log_error()
+    (await SDK.Registry.ls(path)).or_log_error()
         .ok((read_result) => result.finalize_with_value(read_result.value))
         .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
     return result;
 }
-async function write(desc, file, value) {
+async function mod(desc, action, dir, value) {
     const result = new SDK.Result(SDK.ExitCodes.Ok, undefined);
     /* safety */
     if (SDK.contains_undefined_arguments(arguments))
         return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
     /* get path */
-    const path = SDK.Registry.join_paths("permissions", desc, file);
-    /* write */
-    (await SDK.Registry.write(path, value)).or_log_error()
-        .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+    const path = SDK.Registry.join_paths("permissions", desc, dir, value);
+    /* execute */
+    switch (action) {
+        case "add": {
+            (await SDK.Registry.write(path, "")).or_log_error()
+                .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+            break;
+        }
+        case "remove": {
+            (await SDK.Registry.delete(path)).or_log_error()
+                .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
+            break;
+        }
+        default: return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
+    }
     /* log */
-    SDK.log(result.has_failed ? "ERROR" : "ACTIVITY", `Permissions: write "${desc}/${file}".`);
+    SDK.log(result.has_failed ? "ERROR" : "ACTIVITY", `Permissions: write "${path}".`);
     return result;
 }
 async function check(action, uname) {
