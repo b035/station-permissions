@@ -217,13 +217,11 @@ async function get_action_desc(action, flag_values) {
 }
 async function check_sole_permissions(file_path, uname) {
     const result = new SDK.Result(SDK.ExitCodes.Ok, false);
-    /* read file */
-    const read_result = (await SDK.Registry.read(file_path)).or_log_error();
+    /* read dir */
+    const read_result = (await SDK.Registry.ls(file_path)).or_log_error();
     if (read_result.has_failed)
         return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
-    const text = read_result.value;
-    /* parse file */
-    const groups = text.split("\n");
+    const groups = read_result.value;
     /* check permission */
     for (let group of groups) {
         /* check if user is in group */
@@ -240,12 +238,10 @@ async function check_sole_permissions(file_path, uname) {
 async function check_approved_permissions(file_path, uname) {
     const result = new SDK.Result(SDK.ExitCodes.Ok, false);
     /* read file */
-    const read_result = (await SDK.Registry.read(file_path)).or_log_error();
+    const read_result = (await SDK.Registry.ls(file_path)).or_log_error();
     if (read_result.has_failed)
         return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
-    const text = read_result.value;
-    /* parse file */
-    const conditions = text.split("\n");
+    const conditions = read_result.value;
     /* check permission */
     for (let condition of conditions) {
         /* check if user is in one of the groups */
