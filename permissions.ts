@@ -5,6 +5,7 @@ import * as SDK from "@the-stations-project/sdk";
 /* MAIN */
 async function main(subcommand: string, args: string[]) {
 	switch (subcommand) {
+		//TODO get
 		case "create": return await create(args[0]);
 		case "remove": return await remove(args[0]);
 		case "rename": return await rename(args[0], args[1]);
