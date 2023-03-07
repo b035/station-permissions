@@ -52,7 +52,7 @@ async function create(desc) {
         .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
     /* write files */
     for (let dirname of [
-        sole, ",,
+        "sole",
         "approved",
     ]) {
         (await SDK.Registry.mkdir(SDK.Registry.join_paths(path, dirname))).or_log_error()
