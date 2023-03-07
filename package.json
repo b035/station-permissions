@@ -1,6 +1,6 @@
 {
   "name": "@the-stations-project/permissions",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Manages permissions",
   "main": "permissions.js",
   "bin": {
