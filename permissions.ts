@@ -5,7 +5,6 @@ import * as SDK from "@the-stations-project/sdk";
 /* MAIN */
 async function main(subcommand: string, args: string[]) {
 	switch (subcommand) {
-		//TODO get
 		case "create": return await create(args[0]);
 		case "remove": return await remove(args[0]);
 		case "rename": return await rename(args[0], args[1]);
@@ -13,6 +12,7 @@ async function main(subcommand: string, args: string[]) {
 		case "mod": return await mod(args[0], args[1], args[2], args[3]);
 		case "check": return await check(args[0], args[1]);
 		case "check_approval": return await check_approved_permissions(args[0], args[1]);
+		case "list_approval": return await list_approved_permissions(args[0]);
 		default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
 	}
 }
@@ -33,7 +33,7 @@ async function create(desc: string) {
 
 	/* write files */
 	for (let dirname of [
-		"sole",
+		sole",
 		"approved",
 	]) {
 		(await SDK.Registry.mkdir(SDK.Registry.join_paths(path, dirname))).or_log_error()
@@ -276,6 +276,17 @@ async function check_approved_permissions(file_path: string, uname: string) {
 	}
 
 	return result;
+}
+
+async function list_approved_permissions(file_path: string) {
+	const result = new SDK.Result(SDK.ExitCodes.Ok, "");
+
+	/* read file */
+	const read_result = (await SDK.Registry.ls(file_path)).or_log_error();
+	if (read_result.has_failed) return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
+	const conditions = read_result.value!;
+
+	return result.finalize_with_value(conditions.join("\n"));
 }
 
 SDK.start_module(main, (result) => console.log(result.to_string()));
