@@ -33,7 +33,7 @@ async function create(desc: string) {
 
 	/* write files */
 	for (let dirname of [
-		sole",
+		"sole",
 		"approved",
 	]) {
 		(await SDK.Registry.mkdir(SDK.Registry.join_paths(path, dirname))).or_log_error()

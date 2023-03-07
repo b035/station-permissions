@@ -35,6 +35,7 @@ async function main(subcommand, args) {
         case "mod": return await mod(args[0], args[1], args[2], args[3]);
         case "check": return await check(args[0], args[1]);
         case "check_approval": return await check_approved_permissions(args[0], args[1]);
+        case "list_approval": return await list_approved_permissions(args[0]);
         default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
     }
 }
@@ -51,7 +52,7 @@ async function create(desc) {
         .err(() => result.finalize_with_code(SDK.ExitCodes.ErrUnknown));
     /* write files */
     for (let dirname of [
-        "sole",
+        sole, ",,
         "approved",
     ]) {
         (await SDK.Registry.mkdir(SDK.Registry.join_paths(path, dirname))).or_log_error()
@@ -173,7 +174,7 @@ async function get_action_desc(action, flag_values) {
         const desc_words = desc.split(" ");
         for (let i in desc_words) {
             /* process flags */
-            if (desc_words[i][0] == "@") {
+            if (desc_words[i][0] == "-") {
                 const [flag, ...flag_words] = desc_words[i].split("__");
                 switch (flag) {
                     case "@any": {
@@ -260,5 +261,14 @@ async function check_approved_permissions(file_path, uname) {
         }
     }
     return result;
+}
+async function list_approved_permissions(file_path) {
+    const result = new SDK.Result(SDK.ExitCodes.Ok, "");
+    /* read file */
+    const read_result = (await SDK.Registry.ls(file_path)).or_log_error();
+    if (read_result.has_failed)
+        return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
+    const conditions = read_result.value;
+    return result.finalize_with_value(conditions.join("\n"));
 }
 SDK.start_module(main, (result) => console.log(result.to_string()));
