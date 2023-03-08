@@ -174,7 +174,6 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 
 	/* process action */
 	const action_words = action
-		.replace(/["']/g, "")
 		.split(" ");
 
 	/* find matching description */
@@ -187,17 +186,17 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 				const [flag, ...flag_words] = desc_words[i].split("__");
 
 				switch (flag) {
-					case "@any": {
+					case "--any": {
 						break;
 					}
-					case "@get": {
+					case "--get": {
 						const val = flag_values[flag_words[0]];
 
 						//skip if no match
 						if (action_words[i] != val) continue descloop;
 						break;
 					}
-					case "@not": {
+					case "--not": {
 						const illegal_words = flag_words 
 							.join("|");
 
@@ -205,7 +204,7 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 						if (new RegExp(`^(${illegal_words})`).test(action_words[i])) continue descloop;
 						break;
 					}
-					case "@of": {
+					case "--of": {
 						const legal_words = flag_words 
 							.join("|");
 
