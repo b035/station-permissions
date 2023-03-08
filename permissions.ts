@@ -250,18 +250,11 @@ async function get_desc(action: string, uname: string) {
 }
 
 type CheckResult = "none" | "sole" | "approved"
-async function check(action: string, uname: string) {
+async function check(desc: string, uname: string) {
 	const result = new SDK.Result(SDK.ExitCodes.Ok, "none" as CheckResult);
 
 	/* safety */
 	if (SDK.contains_undefined_arguments(arguments)) return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
-
-	/* get description */
-	const desc_result = (await get_action_desc(action, {
-		uname: uname,
-	})).or_log_error();
-	if (desc_result.has_failed) return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
-	const desc = desc_result.value!;
 
 	/* reject if no description */
 	if (desc == "") return result.finalize_with_value("none");
