@@ -324,7 +324,7 @@ async function check_approved_permissions(file_path: string, uname: string) {
 		//extract groups
 		const groups = 
 			condition.split(",")
-			.map(x => x.split(/[\.%]/)[0]);
+			.map(x => x.split("-")[0]);
 
 		for (let group of groups) {
 			const shell_result = (await SDK.Shell.exec_sync(`groups mod_users ${group} check ${uname}`)).or_log_error();
