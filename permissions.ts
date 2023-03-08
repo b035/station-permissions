@@ -323,7 +323,7 @@ async function check_approved_permissions(file_path: string, uname: string) {
 		/* check if user is in one of the groups */
 		//extract groups
 		const groups = 
-			condition.split(",")
+			condition.split(" ")
 			.map(x => x.split("-")[0]);
 
 		for (let group of groups) {
