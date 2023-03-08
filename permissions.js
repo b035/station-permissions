@@ -246,9 +246,6 @@ async function check(desc, uname) {
     /* safety */
     if (SDK.contains_undefined_arguments(arguments))
         return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
-    /* reject if no description */
-    if (desc == "")
-        return result.finalize_with_value("none");
     /* get paths */
     const sole_path = SDK.Registry.join_paths("permissions", desc, "sole");
     const approved_path = SDK.Registry.join_paths("permissions", desc, "approved");
@@ -267,7 +264,7 @@ async function list_conditions(desc) {
     if (SDK.contains_undefined_arguments(arguments))
         return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
     /* get path */
-    const file_path = SDK.Registry.join_paths(desc, "approved");
+    const file_path = SDK.Registry.join_paths("permissions", desc, "approved");
     /* read file */
     const read_result = (await SDK.Registry.ls(file_path)).or_log_error();
     if (read_result.has_failed)
@@ -307,8 +304,8 @@ async function check_approved_permissions(file_path, uname) {
     for (let condition of conditions) {
         /* check if user is in one of the groups */
         //extract groups
-        const groups = condition.split(",")
-            .map(x => x.split(/[\.%]/)[0]);
+        const groups = condition.split(" ")
+            .map(x => x.split("-")[0]);
         for (let group of groups) {
             const shell_result = (await SDK.Shell.exec_sync(`groups mod_users ${group} check ${uname}`)).or_log_error();
             //safety

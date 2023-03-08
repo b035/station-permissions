@@ -277,7 +277,7 @@ async function list_conditions(desc: string) {
 	if (SDK.contains_undefined_arguments(arguments)) return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
 
 	/* get path */
-	const file_path = SDK.Registry.join_paths(desc, "approved");
+	const file_path = SDK.Registry.join_paths("permissions", desc, "approved");
 
 	/* read file */
 	const read_result = (await SDK.Registry.ls(file_path)).or_log_error();
