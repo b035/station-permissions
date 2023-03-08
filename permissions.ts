@@ -175,12 +175,9 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 	/* process action */
 	const action_words: string[] = [];
 	
-	console.log(`.${action}.`);
 	action = action
 		.replace(/ +$/, "") //trailing whitespaces
 		.replace(/^ +/, "") //leading whitespaces
-
-	console.log(`.${action}.`);
 
 	//loop over characters
 	let word_start = 0;
@@ -218,8 +215,6 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 		action_words.push(word_before);
 		word_start = i + 1;
 	}
-
-	console.log(action_words);
 
 	/* find matching description */
 	descloop: for (let desc of descriptions) {
