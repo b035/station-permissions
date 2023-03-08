@@ -184,6 +184,7 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 	let arg_with_quotation_marks = false;
 	for (let i = 0; i < action.length; i++) {
 		let char = action[i];
+		let word_end = i;
 
 		//look out for whitespace or quotation mark
 		switch (char) {
@@ -207,11 +208,15 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 
 				break;
 			}
-			//skip if "normal" character
-			default: continue;
+			default: {
+				//skip if not last character
+				if (i < action.length-1) continue
+				//if last chacter include entire word
+				else word_end = action.length;
+			};
 		}
 
-		const word_before = action.substring(word_start, i);
+		const word_before = action.substring(word_start, word_end);
 		action_words.push(word_before);
 		word_start = i + 1;
 	}
