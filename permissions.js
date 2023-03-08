@@ -35,7 +35,7 @@ async function main(subcommand, args) {
         case "mod": return await mod(args[0], args[1], args[2], args[3]);
         case "check": return await check(args[0], args[1]);
         case "check_approval": return await check_approved_permissions(args[0], args[1]);
-        case "list_approval": return await list_approved_permissions(args[0]);
+        case "list_conditions": return await list_conditions(args[0]);
         default: return new SDK.Result(SDK.ExitCodes.ErrNoCommand, undefined);
     }
 }
@@ -156,6 +156,27 @@ async function check(action, uname) {
         return result.finalize_with_value("approved");
     return result;
 }
+async function list_conditions(action) {
+    const result = new SDK.Result(SDK.ExitCodes.Ok, "");
+    /* safety */
+    if (SDK.contains_undefined_arguments(arguments))
+        return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
+    /* get description */
+    const desc_result = (await get_action_desc(action, {
+        uname: "",
+    })).or_log_error();
+    if (desc_result.has_failed)
+        return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
+    const desc = desc_result.value;
+    /* get path */
+    const file_path = SDK.Registry.join_paths(desc, "approved");
+    /* read file */
+    const read_result = (await SDK.Registry.ls(file_path)).or_log_error();
+    if (read_result.has_failed)
+        return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
+    const conditions = read_result.value;
+    return result.finalize_with_value(conditions.join("\n"));
+}
 /* HELPERS */
 async function get_action_desc(action, flag_values) {
     const result = new SDK.Result(SDK.ExitCodes.Ok, "");
@@ -214,7 +235,6 @@ async function get_action_desc(action, flag_values) {
         action_words.push(word_before);
         word_start = i + 1;
     }
-    console.log(action_words);
     /* find matching description */
     descloop: for (let desc of descriptions) {
         const desc_words = desc.split(" ");
@@ -307,14 +327,5 @@ async function check_approved_permissions(file_path, uname) {
         }
     }
     return result;
-}
-async function list_approved_permissions(file_path) {
-    const result = new SDK.Result(SDK.ExitCodes.Ok, "");
-    /* read file */
-    const read_result = (await SDK.Registry.ls(file_path)).or_log_error();
-    if (read_result.has_failed)
-        return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
-    const conditions = read_result.value;
-    return result.finalize_with_value(conditions.join("\n"));
 }
 SDK.start_module(main, (result) => console.log(result.to_string()));
