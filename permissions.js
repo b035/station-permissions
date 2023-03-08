@@ -166,28 +166,67 @@ async function get_action_desc(action, flag_values) {
     const descriptions = read_result.value
         .reverse(); //alphabetical z-a => most precise description first
     /* process action */
-    const action_words = action
-        .replace(/["']/g, "")
-        .split(" ");
+    const action_words = [];
+    console.log(`.${action}.`);
+    action = action
+        .replace(/ +$/, "") //trailing whitespaces
+        .replace(/^ +/, ""); //leading whitespaces
+    console.log(`.${action}.`);
+    //loop over characters
+    let word_start = 0;
+    let arg_with_quotation_marks = false;
+    for (let i = 0; i < action.length; i++) {
+        let char = action[i];
+        //look out for whitespace or quotation mark
+        switch (char) {
+            case " ": {
+                if (arg_with_quotation_marks)
+                    continue;
+                //skip if previous character was whitespace or quotation mark
+                if (/[ "]/.test(action[i - 1])) {
+                    word_start++;
+                    continue;
+                }
+                break;
+            }
+            case "\"": {
+                if (arg_with_quotation_marks) {
+                    arg_with_quotation_marks = false;
+                }
+                else {
+                    arg_with_quotation_marks = true;
+                    word_start += 1;
+                    continue;
+                }
+                break;
+            }
+            //skip if "normal" character
+            default: continue;
+        }
+        const word_before = action.substring(word_start, i);
+        action_words.push(word_before);
+        word_start = i + 1;
+    }
+    console.log(action_words);
     /* find matching description */
     descloop: for (let desc of descriptions) {
         const desc_words = desc.split(" ");
         for (let i in desc_words) {
             /* process flags */
-            if (desc_words[i][0] == "-") {
+            if (desc_words[i].substring(0, 2) == "--") {
                 const [flag, ...flag_words] = desc_words[i].split("__");
                 switch (flag) {
-                    case "@any": {
+                    case "--any": {
                         break;
                     }
-                    case "@get": {
+                    case "--get": {
                         const val = flag_values[flag_words[0]];
                         //skip if no match
                         if (action_words[i] != val)
                             continue descloop;
                         break;
                     }
-                    case "@not": {
+                    case "--not": {
                         const illegal_words = flag_words
                             .join("|");
                         //skip if match
@@ -195,7 +234,7 @@ async function get_action_desc(action, flag_values) {
                             continue descloop;
                         break;
                     }
-                    case "@of": {
+                    case "--of": {
                         const legal_words = flag_words
                             .join("|");
                         //skip if no match

@@ -173,8 +173,53 @@ async function get_action_desc(action: string, flag_values: {[key: string]: stri
 		.reverse(); //alphabetical z-a => most precise description first
 
 	/* process action */
-	const action_words = action
-		.split(" ");
+	const action_words: string[] = [];
+	
+	console.log(`.${action}.`);
+	action = action
+		.replace(/ +$/, "") //trailing whitespaces
+		.replace(/^ +/, "") //leading whitespaces
+
+	console.log(`.${action}.`);
+
+	//loop over characters
+	let word_start = 0;
+	let arg_with_quotation_marks = false;
+	for (let i = 0; i < action.length; i++) {
+		let char = action[i];
+
+		//look out for whitespace or quotation mark
+		switch (char) {
+			case " ": {
+				if (arg_with_quotation_marks) continue;
+				//skip if previous character was whitespace or quotation mark
+				if (/[ "]/.test(action[i-1])) {
+					word_start++;
+					continue;
+				}
+				break;
+			}
+			case "\"": {
+				if (arg_with_quotation_marks) {
+					arg_with_quotation_marks = false;
+				} else {
+					arg_with_quotation_marks = true;
+					word_start += 1;
+					continue;
+				}
+
+				break;
+			}
+			//skip if "normal" character
+			default: continue;
+		}
+
+		const word_before = action.substring(word_start, i);
+		action_words.push(word_before);
+		word_start = i + 1;
+	}
+
+	console.log(action_words);
 
 	/* find matching description */
 	descloop: for (let desc of descriptions) {
