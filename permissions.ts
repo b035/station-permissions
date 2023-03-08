@@ -249,15 +249,12 @@ async function get_desc(action: string, uname: string) {
 	return result;
 }
 
-type CheckResult = "none" | "sole" | "approved"
+type CheckResult = "none" | "sole" | "approved";
 async function check(desc: string, uname: string) {
 	const result = new SDK.Result(SDK.ExitCodes.Ok, "none" as CheckResult);
 
 	/* safety */
 	if (SDK.contains_undefined_arguments(arguments)) return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
-
-	/* reject if no description */
-	if (desc == "") return result.finalize_with_value("none");
 
 	/* get paths */
 	const sole_path = SDK.Registry.join_paths("permissions", desc, "sole");
