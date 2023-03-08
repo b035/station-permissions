@@ -267,9 +267,9 @@ async function check_approved_permissions(file_path: string, uname: string) {
 			.map(x => x.split(/[\.%]/)[0]);
 
 		for (let group of groups) {
-		const shell_result = (await SDK.Shell.exec_sync(`groups mod_users ${group} check ${uname}`)).or_log_error();
-		//safety
-		if (shell_result.has_failed) continue;
+			const shell_result = (await SDK.Shell.exec_sync(`groups mod_users ${group} check ${uname}`)).or_log_error();
+			//safety
+			if (shell_result.has_failed) continue;
 			const [code, value] = shell_result.value!.split("\n")[0].split("|");
 			if (code == "0" && value == "true") return result.finalize_with_value(true);
 		}
