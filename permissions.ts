@@ -273,18 +273,11 @@ async function check(desc: string, uname: string) {
 	return result;
 }
 
-async function list_conditions(action: string) {
+async function list_conditions(desc: string) {
 	const result = new SDK.Result(SDK.ExitCodes.Ok, "");
 
 	/* safety */
 	if (SDK.contains_undefined_arguments(arguments)) return result.finalize_with_code(SDK.ExitCodes.ErrMissingParameter);
-
-	/* get description */
-	const desc_result = (await get_action_desc(action, {
-		uname: "",
-	})).or_log_error();
-	if (desc_result.has_failed) return result.finalize_with_code(SDK.ExitCodes.ErrUnknown);
-	const desc = desc_result.value!;
 
 	/* get path */
 	const file_path = SDK.Registry.join_paths(desc, "approved");
